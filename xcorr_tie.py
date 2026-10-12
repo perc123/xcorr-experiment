@@ -1,4 +1,4 @@
-import  numpy as np
+import numpy as np
 
 FS = 48_000
 F = 1_000
@@ -30,10 +30,33 @@ idelay = i0 + D
 print(f"Sampling rate: {FS} Hz")
 print(f"Tone frequency: {F} Hz")
 print (f"True delay: {D_MS} ms ({D} samples)")
-print(f"Correlation at 0 ms: {c[idelay]:.12f}")
+print(f"Correlation at 0 ms: {c[i0]:.12f}")
 print(f"Correlation at 100 ms: {c[idelay]:.12f}")
-print(f"np.argmax lag: {lags_ms[np.argmax(c)]:.6f} ms")
+
+
+# Raw numerical maximum
+imax = np.argmax(c)
+print(f"Raw np.argmax lag: {lags_ms[imax]:.6f} ms")
+print(f"Raw maximum: {c[imax]:.12f}")
+
+# Find all values numerically indistinguishable from the maximum
+tol = 1e-8
+near_max = np.isclose(c, c.max(), rtol=1e-12, atol=tol)
+first_near_max = np.flatnonzero(near_max)[0]
+
+print(
+    "First near-maximum lag: "
+    f"{lags_ms[first_near_max]:.6f} ms"
+)
+print(f"Number of near-maximum samples: {near_max.sum()}")
+
+assert near_max[i0], "Zero lag should be a near-maximum"
+assert near_max[idelay], "100 ms should be a near-maximum"
+assert lags_ms[first_near_max] == 0.0
+
 print(f"Equal maxima: {np.isclose(c[i0], c[idelay])}")
+
+
 
 assert np.isclose(c[i0], c[idelay]), (
     "Expected equal correlation values at 0 and 100 ms."
