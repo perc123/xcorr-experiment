@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 FS = 48_000
 F = 1_000
@@ -61,3 +62,57 @@ print(f"Equal maxima: {np.isclose(c[i0], c[idelay])}")
 assert np.isclose(c[i0], c[idelay]), (
     "Expected equal correlation values at 0 and 100 ms."
 )
+
+
+fig, ax = plt.subplots(figsize=(12, 6.27))
+
+# Restrict the view to -50 to +150 ms
+window = (lags_ms >= -50) & (lags_ms <= 150)
+ax.plot(
+    lags_ms[window],
+    c[window],
+    linewidth=0.8,
+    color="#3678A8",
+    label="Cross-correlation",
+)
+
+# Highlight the two equal maxima
+ax.scatter(
+    [0, D_MS],
+    [c[i0], c[idelay]],
+    color="#D9534F",
+    s=65,
+    zorder=5,
+    label="Equal maxima",
+)
+ax.axhline(c[i0], color="#D9534F", linestyle="--", linewidth=1)
+
+ax.annotate(
+    "argmax reports 0 ms",
+    xy=(0, c[i0]),
+    xytext=(-38, c[i0] * 0.88),
+    arrowprops=dict(arrowstyle="->", color="#D9534F"),
+    fontsize=12,
+)
+ax.annotate(
+    "true delay: 100 ms",
+    xy=(D_MS, c[idelay]),
+    xytext=(108, c[idelay] * 0.88),
+    arrowprops=dict(arrowstyle="->", color="#D9534F"),
+    fontsize=12,
+)
+
+ax.set(
+    title="Two equal maxima: which lag wins?",
+    xlabel="Lag (ms)",
+    ylabel="Cross-correlation",
+    xlim=(-50, 150),
+)
+ax.grid(True, alpha=0.2)
+ax.spines["top"].set_visible(False)
+ax.spines["right"].set_visible(False)
+ax.legend(frameon=False, loc="lower left")
+
+fig.tight_layout()
+fig.savefig("xcorr_tie.png", dpi=200, bbox_inches="tight")
+plt.show()
